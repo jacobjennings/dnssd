@@ -1,0 +1,1 @@
+rake -- --with-dnssd-dir=c:/progra~1/bonjou~1 --with-dnssd-lib=c:/progra~1/bonjou~1/lib/win32

@@ -5,9 +5,11 @@
 
 #include <dns_sd.h>
 
+#ifndef _WIN32
 #include <arpa/inet.h>  /* htons ntohs */
 #include <sys/socket.h> /* struct sockaddr_in */
 #include <netdb.h>      /* getservbyport */
+#endif
 
 /* if_indextoname and if_nametoindex */
 #ifdef HAVE_IPHLPAPI_H

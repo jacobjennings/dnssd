@@ -14,10 +14,12 @@ abort('unable to find dnssd library')
 
 have_macro('htons', 'arpa/inet.h') ||
 have_func('htons', 'arpa/inet.h')  ||
+have_func('htons', 'winsock2.h') ||
 abort("couldn't find htons")
 
 have_macro('ntohs', 'arpa/inet.h') ||
 have_func('ntohs', 'arpa/inet.h')  ||
+have_func('ntohs', 'winsock2.h') ||
 abort("couldn't find ntohs")
 
 # These functions live in netioapi.h on Windows, not net/if.h. The MSDN
@@ -29,9 +31,7 @@ abort("couldn't find ntohs")
 # ConvertInterfaceLuidToNameA().
 #
 if have_header 'iphlpapi.h' then
-  have_func('if_indextoname', %w[iphlpapi.h netioapi.h]) &&
-  have_func('if_nametoindex', %w[iphlpapi.h netioapi.h]) ||
-  abort('unable to find if_indextoname or if_nametoindex')
+  # no worries, we include our own.
 else
   if RUBY_PLATFORM =~ /solaris/ then
     have_library('xnet') ||
@@ -47,9 +47,11 @@ end
 
 # HACK prefer Socket.getservbyport in 1.9
 have_func('getservbyport', 'netdb.h') ||
+have_func('getservbyport', 'winsock2.h') ||
 abort('unable to find getservbyport')
 
 have_type('struct sockaddr_in', 'netinet/in.h') ||
+have_type('struct sockaddr_in', 'winsock2.h') ||
 abort('unable to find struct sockaddr_in')
 
 have_struct_member 'struct sockaddr_in', 'sin_len', 'netinet/in.h'

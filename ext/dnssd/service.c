@@ -273,9 +273,10 @@ dnssd_service_add_record(VALUE self, VALUE _flags, VALUE _rrtype, VALUE _rdata,
   return _record;
 }
 
+
 static void DNSSD_API
 dnssd_service_browse_reply(DNSServiceRef client, DNSServiceFlags flags,
-    uint32_t interface, DNSServiceErrorType e, const char *name,
+    uint32_t iface, DNSServiceErrorType e, const char *name,
     const char *type, const char *domain, void *context) {
   VALUE service, reply, argv[6];
 
@@ -285,7 +286,7 @@ dnssd_service_browse_reply(DNSServiceRef client, DNSServiceFlags flags,
 
   argv[0] = service;
   argv[1] = ULONG2NUM(flags);
-  argv[2] = ULONG2NUM(interface);
+  argv[2] = ULONG2NUM(iface);
   argv[3] = rb_str_new2(name);
   rb_enc_associate(argv[3], rb_utf8_encoding());
   argv[4] = rb_str_new2(type);
@@ -299,18 +300,18 @@ dnssd_service_browse_reply(DNSServiceRef client, DNSServiceFlags flags,
 }
 
 /* call-seq:
- *   service._browse(flags, interface, type, domain)
+ *   service._browse(flags, iface, type, domain)
  *
  * Binding to DNSServiceBrowse
  */
 
 static VALUE
-dnssd_service_browse(VALUE self, VALUE _flags, VALUE _interface, VALUE _type,
+dnssd_service_browse(VALUE self, VALUE _flags, VALUE _iface, VALUE _type,
     VALUE _domain) {
   const char *type;
   const char *domain = NULL;
   DNSServiceFlags flags = 0;
-  uint32_t interface = 0;
+  uint32_t iface = 0;
 
   DNSServiceErrorType e;
   DNSServiceRef *client;
@@ -323,12 +324,12 @@ dnssd_service_browse(VALUE self, VALUE _flags, VALUE _interface, VALUE _type,
   if (!NIL_P(_flags))
     flags = (DNSServiceFlags)NUM2ULONG(_flags);
 
-  if (!NIL_P(_interface))
-    interface = (uint32_t)NUM2ULONG(_interface);
+  if (!NIL_P(_iface))
+    iface = (uint32_t)NUM2ULONG(_iface);
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
-  e = DNSServiceBrowse(client, flags, interface, type, domain,
+  e = DNSServiceBrowse(client, flags, iface, type, domain,
       dnssd_service_browse_reply, (void *)self);
 
   dnssd_check_error_code(e);
@@ -338,7 +339,7 @@ dnssd_service_browse(VALUE self, VALUE _flags, VALUE _interface, VALUE _type,
 
 static void DNSSD_API
 dnssd_service_enumerate_domains_reply(DNSServiceRef client,
-    DNSServiceFlags flags, uint32_t interface, DNSServiceErrorType e,
+    DNSServiceFlags flags, uint32_t iface, DNSServiceErrorType e,
     const char *domain, void *context) {
   VALUE service, reply, argv[4];
 
@@ -348,7 +349,7 @@ dnssd_service_enumerate_domains_reply(DNSServiceRef client,
 
   argv[0] = service;
   argv[1] = ULONG2NUM(flags);
-  argv[2] = ULONG2NUM(interface);
+  argv[2] = ULONG2NUM(iface);
   argv[3] = rb_str_new2(domain);
   rb_enc_associate(argv[3], rb_utf8_encoding());
 
@@ -358,15 +359,15 @@ dnssd_service_enumerate_domains_reply(DNSServiceRef client,
 }
 
 /* call-seq:
- *   service._enumerate_domains(flags, interface)
+ *   service._enumerate_domains(flags, iface)
  *
  * Binding to DNSServiceEnumerateDomains
  */
 
 static VALUE
-dnssd_service_enumerate_domains(VALUE self, VALUE _flags, VALUE _interface) {
+dnssd_service_enumerate_domains(VALUE self, VALUE _flags, VALUE _iface) {
   DNSServiceFlags flags = 0;
-  uint32_t interface = 0;
+  uint32_t iface = 0;
 
   DNSServiceErrorType e;
   DNSServiceRef *client;
@@ -374,12 +375,12 @@ dnssd_service_enumerate_domains(VALUE self, VALUE _flags, VALUE _interface) {
   if (!NIL_P(_flags))
     flags = (DNSServiceFlags)NUM2ULONG(_flags);
 
-  if (!NIL_P(_interface))
-    interface = (uint32_t)NUM2ULONG(_interface);
+  if (!NIL_P(_iface))
+    iface = (uint32_t)NUM2ULONG(_iface);
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
-  e = DNSServiceEnumerateDomains(client, flags, interface,
+  e = DNSServiceEnumerateDomains(client, flags, iface,
       dnssd_service_enumerate_domains_reply, (void *)self);
 
   dnssd_check_error_code(e);
@@ -390,7 +391,7 @@ dnssd_service_enumerate_domains(VALUE self, VALUE _flags, VALUE _interface) {
 #ifdef HAVE_DNSSERVICEGETADDRINFO
 static void DNSSD_API
 dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
-    uint32_t interface, DNSServiceErrorType e, const char *host,
+    uint32_t iface, DNSServiceErrorType e, const char *host,
     const struct sockaddr *address, uint32_t ttl, void *context) {
   VALUE service, reply, argv[6];
 
@@ -400,7 +401,7 @@ dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
 
   argv[0] = service;
   argv[1] = ULONG2NUM(flags);
-  argv[2] = ULONG2NUM(interface);
+  argv[2] = ULONG2NUM(iface);
   argv[3] = rb_str_new2(host);
   rb_enc_associate(argv[3], rb_utf8_encoding());
   argv[4] = rb_str_new((char *)address, SIN_LEN((struct sockaddr_in*)address));
@@ -413,16 +414,16 @@ dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
 }
 
 /* call-seq:
- *   service._getaddrinfo(flags, interface, host, protocol)
+ *   service._getaddrinfo(flags, iface, host, protocol)
  *
  * Binding to DNSServiceGetAddrInfo
  */
 
 static VALUE
-dnssd_service_getaddrinfo(VALUE self, VALUE _flags, VALUE _interface,
+dnssd_service_getaddrinfo(VALUE self, VALUE _flags, VALUE _iface,
     VALUE _protocol, VALUE _host) {
   DNSServiceFlags flags = 0;
-  uint32_t interface = 0;
+  uint32_t iface = 0;
   DNSServiceProtocol protocol = 0;
   const char *host;
 
@@ -436,12 +437,12 @@ dnssd_service_getaddrinfo(VALUE self, VALUE _flags, VALUE _interface,
   if (!NIL_P(_flags))
     flags = (DNSServiceFlags)NUM2ULONG(_flags);
 
-  if (!NIL_P(_interface))
-    interface = (uint32_t)NUM2ULONG(_interface);
+  if (!NIL_P(_iface))
+    iface = (uint32_t)NUM2ULONG(_iface);
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
-  e = DNSServiceGetAddrInfo(client, flags, interface, protocol, host,
+  e = DNSServiceGetAddrInfo(client, flags, iface, protocol, host,
       dnssd_service_getaddrinfo_reply, (void *)self);
 
   dnssd_check_error_code(e);
@@ -452,7 +453,7 @@ dnssd_service_getaddrinfo(VALUE self, VALUE _flags, VALUE _interface,
 
 static void DNSSD_API
 dnssd_service_query_record_reply(DNSServiceRef client, DNSServiceFlags flags,
-    uint32_t interface, DNSServiceErrorType e, const char *fullname,
+    uint32_t iface, DNSServiceErrorType e, const char *fullname,
     uint16_t rrtype, uint16_t rrclass, uint16_t rdlen, const void *rdata,
     uint32_t ttl, void *context) {
   VALUE service, reply, argv[8];
@@ -463,7 +464,7 @@ dnssd_service_query_record_reply(DNSServiceRef client, DNSServiceFlags flags,
 
   argv[0] = service;
   argv[1] = ULONG2NUM(flags);
-  argv[2] = ULONG2NUM(interface);
+  argv[2] = ULONG2NUM(iface);
   argv[3] = rb_str_new2(fullname);
   rb_enc_associate(argv[3], rb_utf8_encoding());
   argv[4] = UINT2NUM(rrtype);
@@ -478,31 +479,31 @@ dnssd_service_query_record_reply(DNSServiceRef client, DNSServiceFlags flags,
 }
 
 /* call-seq:
- *   service._query_record(flags, interface, fullname, record_type, record_class)
+ *   service._query_record(flags, iface, fullname, record_type, record_class)
  *
  * Binding to DNSServiceQueryRecord
  */
 
 static VALUE
-dnssd_service_query_record(VALUE self, VALUE _flags, VALUE _interface,
+dnssd_service_query_record(VALUE self, VALUE _flags, VALUE _iface,
     VALUE _fullname, VALUE _rrtype, VALUE _rrclass) {
   DNSServiceRef *client;
   DNSServiceFlags flags;
   DNSServiceErrorType e;
   char *fullname;
-  uint32_t interface;
+  uint32_t iface;
   uint16_t rrtype;
   uint16_t rrclass;
 
   flags = (DNSServiceFlags)NUM2ULONG(_flags);
-  interface = (uint32_t)NUM2ULONG(_interface);
+  iface = (uint32_t)NUM2ULONG(_iface);
   dnssd_utf8_cstr(_fullname, fullname);
   rrtype = NUM2UINT(_rrtype);
   rrclass = NUM2UINT(_rrclass);
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
-  e = DNSServiceQueryRecord(client, flags, interface, fullname, rrtype,
+  e = DNSServiceQueryRecord(client, flags, iface, fullname, rrtype,
       rrclass, dnssd_service_query_record_reply, (void *)self);
 
   dnssd_check_error_code(e);
@@ -535,20 +536,20 @@ dnssd_service_register_reply(DNSServiceRef client, DNSServiceFlags flags,
 }
 
 /* call-seq:
- *   service._register(flags, interface, name, type, domain, host, port, text_record)
+ *   service._register(flags, iface, name, type, domain, host, port, text_record)
  *
  * Binding to DNSServiceRegister
  */
 
 static VALUE
-dnssd_service_register(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
+dnssd_service_register(VALUE self, VALUE _flags, VALUE _iface, VALUE _name,
     VALUE _type, VALUE _domain, VALUE _host, VALUE _port, VALUE _text_record) {
   const char *name, *type, *host = NULL, *domain = NULL;
   uint16_t port;
   uint16_t txt_len = 0;
   char *txt_rec = NULL;
   DNSServiceFlags flags = 0;
-  uint32_t interface = 0;
+  uint32_t iface = 0;
   DNSServiceRegisterReply callback = NULL;
 
   DNSServiceErrorType e;
@@ -573,15 +574,15 @@ dnssd_service_register(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
   if (!NIL_P(_flags))
     flags = (DNSServiceFlags)NUM2ULONG(_flags);
 
-  if (!NIL_P(_interface))
-    interface = (uint32_t)NUM2ULONG(_interface);
+  if (!NIL_P(_iface))
+    iface = (uint32_t)NUM2ULONG(_iface);
 
   if (rb_block_given_p())
     callback = dnssd_service_register_reply;
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
-  e = DNSServiceRegister(client, flags, interface, name, type,
+  e = DNSServiceRegister(client, flags, iface, name, type,
       domain, host, port, txt_len, txt_rec, callback, (void*)self);
 
   dnssd_check_error_code(e);
@@ -591,7 +592,7 @@ dnssd_service_register(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
 
 static void DNSSD_API
 dnssd_service_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
-    uint32_t interface, DNSServiceErrorType e, const char *name,
+    uint32_t iface, DNSServiceErrorType e, const char *name,
     const char *target, uint16_t port, uint16_t txt_len,
     const unsigned char *txt_rec, void *context) {
   VALUE service, reply, argv[7];
@@ -602,7 +603,7 @@ dnssd_service_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
 
   argv[0] = service;
   argv[1] = ULONG2NUM(flags);
-  argv[2] = ULONG2NUM(interface);
+  argv[2] = ULONG2NUM(iface);
   argv[3] = rb_str_new2(name);
   rb_enc_associate(argv[3], rb_utf8_encoding());
   argv[4] = rb_str_new2(target);
@@ -617,17 +618,17 @@ dnssd_service_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
 }
 
 /* call-seq:
- *   service._resolve(flags, interface, name, type, domain)
+ *   service._resolve(flags, iface, name, type, domain)
  *
  * Binding to DNSServiceResolve
  */
 
 static VALUE
-dnssd_service_resolve(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
+dnssd_service_resolve(VALUE self, VALUE _flags, VALUE _iface, VALUE _name,
     VALUE _type, VALUE _domain) {
   const char *name, *type, *domain;
   DNSServiceFlags flags = 0;
-  uint32_t interface = 0;
+  uint32_t iface = 0;
 
   DNSServiceErrorType e;
   DNSServiceRef *client;
@@ -639,12 +640,12 @@ dnssd_service_resolve(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
   if (!NIL_P(_flags))
     flags = (uint32_t)NUM2ULONG(_flags);
 
-  if (!NIL_P(_interface))
-    interface = (uint32_t)NUM2ULONG(_interface);
+  if (!NIL_P(_iface))
+    iface = (uint32_t)NUM2ULONG(_iface);
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
-  e = DNSServiceResolve(client, flags, interface, name, type, domain,
+  e = DNSServiceResolve(client, flags, iface, name, type, domain,
       dnssd_service_resolve_reply, (void *)self);
 
   dnssd_check_error_code(e);
