@@ -4,6 +4,6 @@ Gem::Specification.new do |s|
   s.summary     = "Bonjour bindings for Ruby"
   s.description = ""
   s.authors     = ['Eric Hodel', 'Aaron Patterson', 'Phil Hagelberg', 'Chad Fowler', 'Charles Mills', 'Rich Kilmer']
-  s.files       = ["lib/**/*"]
+  s.files       = Dir.glob("{bin,lib}/**/*")
   s.homepage    = 'https://github.com/jacobjennings/dnssd'
 end
